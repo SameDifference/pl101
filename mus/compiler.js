@@ -71,6 +71,7 @@ var melody_mus =
 
 /* rhino: let console.log be used instead of print */
 if (typeof console == "undefined" || typeof console.log == "undefined") var console = { log: function(g) {print(g);} };
+if (typeof print == "undefined") var console = { log: function(h) {} };
 
 console.log(JSON.stringify(melody_mus));
 console.log(JSON.stringify((compile(melody_mus))));
