@@ -13,13 +13,16 @@ function endTime(time, expr) {
     return curTime;
 }
 
+function pitch2midi(pitch) {
+	return 12 + 12 * (pitch.charCodeAt(1) - 48) + (pitch.charCodeAt(0) - 99);
+}
 
 function translate(musexpr) {
     var note = {};
     var left, right, lt, rt;
     if (musexpr.tag == 'note') {
         note.tag = 'note';
-        note.pitch = musexpr.pitch;
+        note.pitch = pitch2midi(musexpr.pitch);
         note.start = t;
         note.dur = musexpr.dur;
         return JSON.stringify(note);
