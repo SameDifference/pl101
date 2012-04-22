@@ -7,7 +7,8 @@ mus "music" =
 
 NOTE "note" =
 	pitch:validchar+ SP? duration:integer Whitespace?
-		{ return {tag:'note', pitch:pitch.join(""), dur:duration}; }
+		{ duration = duration ? (prevdur = duration) : prevdur;
+			return {tag:'note', pitch:pitch.join(""), dur:duration}; }
 
 SEQUENCE "sequence" =
 	"(" first:mus SL last:mus ")" Whitespace?
