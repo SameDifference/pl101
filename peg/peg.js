@@ -1,29 +1,32 @@
 start =
-    atomlist
+	scheem
 
-atomlist =
-    all:element*
-    {
-     while (all instanceof Array && all.length == 1) all = all[0];
-     return all; }
+scheem =
+	Whitespace? element:(QUOTE / ATOM / LIST) Whitespace?
+		{ return element; }
 
-element =
-    "\n"? " "* "(" all:element* ")" " "*
-        { return [].concat(all); }
-  / " "+ atm:atom
-        { return atm; }
-  / atm:atom
-        { return atm; }
-  / ";;" text:[^\n\r]* EOL 
-        { return {tag: "comment", text: text.join("")}; }
+LIST =
+	"(" elements:scheem* ")"
+		{ return elements; }
 
-validchar
-    =
-    [0-9a-zA-Z_?!+=@#$%^&*/.-]
+ATOM =
+	atomchars:validchar+
+		{ return atomchars.join(''); }
 
-EOL
- = [\n\r]{1,2} / !. 
+QUOTE =
+	"'" quoted:scheem
+		{ return ['quote', quoted]; }
 
-atom =
-    chars:validchar+
-        { return chars.join(""); }
+COMMENT =
+	";;" (!([\u000a\u000b\u000c\u000d\u0085\u2028\u2029])
+	[\u0000-\uffff])*
+
+/* un-elements */
+
+Whitespace =
+	([\u0009\u0020\u00a0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006]
+  / [\u000a\u000b\u000c\u000d\u0085\u2028\u2029]
+  / COMMENT)+
+
+validchar =
+	[0-9a-zA-Z_?!+=@#$%^&*/.-]
