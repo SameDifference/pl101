@@ -1,0 +1,40 @@
+start =
+	mus
+
+mus "music" =
+	Whitespace? element:(NOTE / SEQUENCE / PARALLEL / REST)* Whitespace?
+		{ return (element.length === 1) ? element[0] : element; }
+
+NOTE "note" =
+	pitch:validchar+ SP? duration:integer Whitespace?
+		{ return {tag:'note', pitch:pitch.join(""), dur:duration}; }
+
+SEQUENCE "sequence" =
+	"(" first:mus SL last:mus ")" Whitespace?
+		{ return {tag: 'seq', left:first, right:last };}
+
+PARALLEL "parallel" =
+	"[" first:mus SL last:mus "]" Whitespace?
+		{ return {tag: 'par', left:first, right:last };}
+
+REST "rest" =
+	"r" ", " duration:integer Whitespace?
+		{ return {tag: 'rest', dur:duration}; }
+
+/* un-elements */
+
+integer "integer" =
+	digits:[0-9]+ { return parseInt(digits.join(""), 10); }
+
+Whitespace "whitespace" =
+	([\u0009\u0020\u00a0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006]
+  / [\u000a\u000b\u000c\u000d\u0085\u2028\u2029])+
+
+validchar "valid character" =
+	[0-9a-g]
+
+SP "argument separator" =
+	Whitespace? "," Whitespace?
+	
+SL "slash separator" = 
+	Whitespace? "/" Whitespace?
