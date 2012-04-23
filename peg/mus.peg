@@ -1,28 +1,50 @@
-{ var prevdur = 0; }
+{	var defaults = [];
+	function fern(unexpected, actual, defaulted) {
+		return (actual !== unexpected) ? actual : defaults[defaulted];
+	}
+	function set_default(object, name) {
+		defaults[name] = object;
+	}
+}
 
 start =
-	mus
+	musa:mus
+            { var dexpr = [];
+			for (var k in musa)
+				if (musa[k].tag !== undefined)
+					dexpr.push(musa[k]);
+              return dexpr; }
 
 mus "music" =
-	Whitespace? element:(NOTE / SEQUENCE / PARALLEL / REST)* Whitespace?
+	Whitespace? element:(NOTE / SEQUENCE / PARALLEL / REST / SET)* Whitespace?
 		{ return (element.length === 1) ? element[0] : element; }
 
 NOTE "note" =
-	pitch:validchar+ SP? duration:integer Whitespace?
-		{ duration = duration ? (prevdur = duration) : prevdur;
-			return {tag:'note', pitch:pitch.join(""), dur:duration}; }
+	pitch:validchar* SP? duration:integer Whitespace?
+		{ duration = fern(0, duration, "duration");
+				  pitch = pitch.join("");
+		  pitch = fern("", pitch, "pitch");
+			return {tag:'note', pitch:pitch, dur:duration}; }
 
 SEQUENCE "sequence" =
-	"(" first:mus SL last:mus ")" Whitespace?
-		{ return {tag: 'seq', left:first, right:last };}
+	"(" first:mus SL last:mus? ")" Whitespace?
+		{ console.log(last);
+                if (last.length === 0) last = first;
+                return {tag: 'seq', left:first, right:last };}
 
 PARALLEL "parallel" =
 	"[" first:mus SL last:mus "]" Whitespace?
 		{ return {tag: 'par', left:first, right:last };}
 
 REST "rest" =
-	"r" ", " duration:integer Whitespace?
+	"r" SP duration:integer Whitespace?
 		{ return {tag: 'rest', dur:duration}; }
+
+SET "set default" =
+	"s" SP id:[0-9a-z]+ Whitespace? "=" Whitespace? value:validchar+ Whitespace?
+		{ set_default(value.join(""), id.join(""));
+			return {}; }
+
 
 /* un-elements */
 
@@ -38,6 +60,6 @@ validchar "valid character" =
 
 SP "argument separator" =
 	Whitespace? "," Whitespace?
-	
+
 SL "slash separator" = 
 	Whitespace? "/" Whitespace?
